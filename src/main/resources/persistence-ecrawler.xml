@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+    http://java.sun.com/xml/ns/persistence                      
+    http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+
+	<persistence-unit name="crawlerPU" transaction-type="RESOURCE_LOCAL">
+	<class>edu.cqu.fly.crawler.domain.Project</class>
+	<class>edu.cqu.fly.crawler.domain.TaskInfo</class>
+	<class>edu.cqu.fly.crawler.domain.TaskData</class>
+	<class>edu.cqu.fly.crawler.domain.Project_Task</class>	
+	<class>edu.cqu.fly.crawler.domain.OutputData</class>	
+	</persistence-unit>
+
+</persistence> 

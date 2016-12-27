@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" 
+	default-autowire="byName"
+	default-lazy-init="false">
+	<context:component-scan base-package="edu.cqu.fly.crawler">
+    	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+	
+	<!-- 自动扫描dao和service包(自动注入) -->
+	<context:component-scan base-package="edu.cqu.fly.crawler.dao" />
+	<context:component-scan base-package="edu.cqu.fly.crawler.service" />
+	<!-- <context:component-scan base-package="edu.cqu.fly.crawler.taskpool" /> -->
+	<!-- 开启Spring的Annotation注解处理器 -->
+    <context:annotation-config />
+	<!-- 引入属性文件 -->
+	<context:property-placeholder location="classpath:dbconfig.properties" />
+	<!-- 配置数据源 -->
+	<bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<!-- 初始化连接大小 -->
+		<property name="initialSize" value="0" />
+		<!-- 连接池最大使用连接数量 -->
+		<property name="maxActive" value="20" />
+		<!-- 连接池最大空闲 -->
+		<property name="maxIdle" value="20" />
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle" value="5" />
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait" value="60000" />
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="33" />
+		<property name="validationQuery" value="${validationQuery.sqlserver}" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="testWhileIdle" value="true" />
+
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="25200000" />
+
+		<!-- 打开removeAbandoned功能 -->
+		<property name="removeAbandoned" value="true" />
+		<!-- 1800秒，也就是30分钟 -->
+		<property name="removeAbandonedTimeout" value="1800" />
+		<!-- 关闭abanded连接时输出错误日志 -->
+		<property name="logAbandoned" value="true" />
+
+		<!-- 开启Druid的监控统计功能 -->
+		<property name="filters" value="stat" />
+		<!--<property name="filters" value="mergeStat" /> -->
+		<!-- Oracle连接是获取字段注释 -->
+		<property name="connectProperties">
+			<props>
+				<prop key="remarksReporting">true</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="persistenceXmlLocation" value="classpath:persistence-ecrawler.xml" />
+		<property name="persistenceUnitName" value="crawlerPU" />
+		<property name="persistenceProvider" ref="persistenceProvider" />
+		<property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- 建立视图内拦截器来解决JPA中访问延迟加载属性时产生的无会话异常 -->  
+    <!-- LazyInitializationException: could not initialize proxy no session -->  
+    <!-- 此拦截器会注入到servlet配置中的DefaultAnnotationHandlerMapping中 -->  
+    <bean name="openEntityManagerInViewInterceptor"   
+        class="org.springframework.orm.jpa.support.OpenEntityManagerInViewInterceptor">  
+        <property name="entityManagerFactory">  
+        <ref bean="entityManagerFactory" />  
+        </property>  
+    </bean> 
+	
+	<bean  
+    class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">  
+    <property name="interceptors">  
+        <list>  
+            <ref bean="openEntityManagerInViewInterceptor" />  
+        </list>  
+    </property>   
+</bean>
+	
+	
+	<bean id="persistenceProvider" class="org.hibernate.ejb.HibernatePersistence" />
+	<bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+		<property name="generateDdl" value="false" />
+	</bean>
+	
+	<!-- JDBC配置 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+
+	<!-- JDBC配置 -->
+	<bean id="namedParameterJdbcTemplate"
+		class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
+		<constructor-arg ref="dataSource" />
+	</bean>
+	
+	<!-- 配置事物管理器，在*ServiceImpl里写@Transactional就可以启用事物管理 -->
+	<bean name="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory"></property>
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	<!-- *************************************************************** -->
+	<tx:annotation-driven/>
+</beans>
