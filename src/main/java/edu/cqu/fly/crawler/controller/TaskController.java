@@ -55,7 +55,7 @@ public class TaskController {
 			taskData.setIsRedistribute(0);
 		}
 		String data = request.getParameter("Data");
-		taskData.setData(data);
+		//taskData.setData(data);
 		// data.setClientid(clientID);
 		taskData.setStatus(1);
 		Date finishedTime = new Date();
@@ -113,6 +113,27 @@ public class TaskController {
 		}
 		SystemUtils.jsonResponse(response, json.toJSONString());
 	}
+	
+	@RequestMapping("/getProxyTask")
+	@ResponseBody
+	public void getProxyTask(@RequestParam(value = "ClientID", required = false) String clientID, HttpServletRequest request,
+			HttpServletResponse response) {
+		GeneratedKey gk = taskService.scheduleAProxyTask(clientID);
+
+		TaskInfo task = gk.getTaskInfo();
+		JSONObject json = new JSONObject();
+		if (task == null) {
+			json.put("msg", "获取任务失败");
+			json.put("success", false);
+			json.put("task", "[]");
+		} else {
+			json.put("msg", "获取任务成功");
+			json.put("success", true);
+			json.put("task", task);
+			json.put("TaskDataID", gk.getTaskdataid());
+		}
+		SystemUtils.jsonResponse(response, json.toJSONString());
+	}
 
 	@RequestMapping("/version")
 	@ResponseBody
@@ -128,7 +149,6 @@ public class TaskController {
 				json.put("success", true);
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			json.put("msg", "服务器端程序异常，" + e.toString());
 			json.put("success", false);

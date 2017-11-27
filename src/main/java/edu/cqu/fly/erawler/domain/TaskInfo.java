@@ -22,7 +22,7 @@ public class TaskInfo implements Serializable{
 	private int taskID;
 	
 	@Column(name="ProjectID")
-	private String projectID;
+	private Integer projectID;
 	
 	@Column(name="URL")
 	private String URL;
@@ -63,10 +63,10 @@ public class TaskInfo implements Serializable{
 	public void setTaskID(int taskID) {
 		this.taskID = taskID;
 	}
-	public String getProjectID() {
+	public Integer getProjectID() {
 		return projectID;
 	}
-	public void setProjectID(String projectID) {
+	public void setProjectID(Integer projectID) {
 		this.projectID = projectID;
 	}
 	public String getURL() {

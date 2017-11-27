@@ -10,6 +10,7 @@
 	<class>edu.cqu.fly.crawler.domain.TaskData</class>
 	<class>edu.cqu.fly.crawler.domain.Project_Task</class>	
 	<class>edu.cqu.fly.crawler.domain.OutputData</class>	
+	<class>edu.cqu.fly.crawler.domain.IPProxy</class>
 	</persistence-unit>
 
 </persistence> 

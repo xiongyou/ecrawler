@@ -30,8 +30,8 @@ public class TaskData {
 	@Column(name="FailedInfo")
 	private String FailedInfo;
 	
-	@Column(name="Data")
-	private String Data;
+	//@Column(name="Data")
+	//private String Data;
 	
 	@Column(name="ClientID")
 	private String clientid;
@@ -84,7 +84,7 @@ public class TaskData {
 	public void setFailedInfo(String failedInfo) {
 		FailedInfo = failedInfo;
 	}
-
+  /*
 	public String getData() {
 		return Data;
 	}
@@ -92,7 +92,7 @@ public class TaskData {
 	public void setData(String data) {
 		Data = data;
 	}
-
+*/
 	public String getClientid() {
 		return clientid;
 	}
